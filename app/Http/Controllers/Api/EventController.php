@@ -61,7 +61,7 @@ class EventController extends Controller
         ], 201);
     }
 
-    public function edit($id)
+    public function show($id)
     {
         $event = Event::find($id);
 
@@ -81,6 +81,8 @@ class EventController extends Controller
     public function update(Request $request, $id)
     {
         $event = Event::find($id);
+
+        $this->authorize('update', $event);
 
         if (!$event) {
             return response()->json([
@@ -128,9 +130,11 @@ class EventController extends Controller
         ], 200);
     }
 
-    public function delete($id)
+    public function destroy($id)
     {
         $event = Event::find($id);
+
+        $this->authorize('delete', $event);
 
         if (!$event) {
             return response()->json([

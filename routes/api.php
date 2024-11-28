@@ -19,43 +19,59 @@ use App\Http\Controllers\Api\CommentController;
 |
 */
 
-Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
-    return $request->user();
-});
-
-
 Route::prefix('v1')->group(function () {
+
+    // ROUTES AUTH
     Route::post('auth/register', [AuthController::class, 'register']);
     Route::post('auth/login', [AuthController::class, 'login']);
 
+    // Routes publiques - Pas besoin d'être connecté
+    Route::get('posts', [PostController::class, 'index']);
+    Route::get('posts/{post}', [PostController::class, 'show']);
     Route::get('posts/feeded', [PostController::class, 'feeded']);
-    Route::get('posts/{id}', [PostController::class, 'show']);
+
+    Route::get('events', [EventController::class, 'index']);
+    Route::get('events/{event}', [EventController::class, 'show']);
 
     Route::get('comments', [CommentController::class, 'index']);
     Route::get('comments/{comment}', [CommentController::class, 'show']);
 
+    Route::get('likes/count/{likeable_id}/{likeable_type}', [LikeController::class, 'count']);
+
+
+    // Routes protégées - Authentification requise
     Route::middleware(['auth.middleware'])->group(function () {
 
-        Route::delete('/auth/logout', [AuthController::class, 'logout']);
+        Route::delete('auth/logout', [AuthController::class, 'logout']);
         Route::get('auth/profil', [AuthController::class, 'profil']);
 
-        Route::get('posts', [PostController::class, 'index']);
-        Route::post('posts', [PostController::class, 'store']);
-        Route::put('posts/{post}', [PostController::class, 'update']);
-        Route::delete('posts/{post}', [PostController::class, 'destroy']);
+        Route::post('posts', [PostController::class, 'store'])
+        ->middleware('can:create,App\Models\Post');
 
-        Route::post('comments', [CommentController::class, 'store']);
-        Route::put('comments/{comment}', [CommentController::class, 'update']);
-        Route::delete('comments/{comment}', [CommentController::class, 'destroy']);
+        Route::put('posts/{post}', [PostController::class, 'update'])
+        ->middleware('can:update,post');
+
+        Route::delete('posts/{post}', [PostController::class, 'destroy'])
+        ->middleware('can:delete,post');
+
+        Route::post('events', [EventController::class, 'store'])
+        ->middleware('can:create,App\Models\Event');
+
+        Route::put('events/{event}', [EventController::class, 'update'])
+        ->middleware('can:update,event');
+
+        Route::delete('events/{event}', [EventController::class, 'destroy'])
+        ->middleware('can:delete,event');
+
+        Route::post('comments', [CommentController::class, 'store'])
+        ->middleware('can:create,App\Models\Comment');
+
+        Route::put('comments/{comment}', [CommentController::class, 'update'])
+        ->middleware('can:update,comment');
+
+        Route::delete('comments/{comment}', [CommentController::class, 'destroy'])
+        ->middleware('can:delete,comment');
 
         Route::post('likes', [LikeController::class, 'like']);
-
-        Route::prefix('events')->group(function () {
-            Route::get('/', [EventController::class, 'index']);
-            Route::post('/', [EventController::class, 'store']);
-            Route::get('/{id}', [EventController::class, 'edit']);
-            Route::put('/{id}', [EventController::class, 'update']);
-            Route::delete('/{id}', [EventController::class, 'delete']);
-        });
     });
 });

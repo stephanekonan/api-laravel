@@ -37,6 +37,9 @@ class PostController extends Controller
 
     public function store(Request $request)
     {
+
+        $this->authorize('create', Post::class);
+
         $validatedData = $request->validate([
             'type' => 'required|in:text,image,video,audio',
             'description' => 'required|string',
@@ -92,6 +95,8 @@ class PostController extends Controller
     public function update(Request $request, $id)
     {
         $post = Post::findOrFail($id);
+
+        $this->authorize('update', $post);
 
         $validatedData = $request->validate([
             'type' => 'required|in:text,image,video,audio',
@@ -150,6 +155,8 @@ class PostController extends Controller
     public function destroy($id)
     {
         $post = Post::find($id);
+
+        $this->authorize('delete', $post);
 
         if (!$post) {
             return response()->json(['message' => 'Post introuvable'], 404);

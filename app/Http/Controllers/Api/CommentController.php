@@ -21,20 +21,23 @@ class CommentController extends Controller
 
     public function show($id)
     {
-        $comment = Comment::with('user')->find($id);
+        $comment = Comment::with('user', 'post')->find($id);
 
         if (!$comment) {
             return response()->json(['message' => 'Commentaire introuvable'], 401);
         }
 
         return response()->json([
-            'message' => 'Commentaire introuvable',
+            'message' => 'Commentaire trouvé',
             'data' => $comment
         ], 200);
     }
 
     public function store(Request $request)
     {
+
+        $this->authorize('create', Comment::class);
+
         $validatedData = $request->validate([
             'post_id' => 'required|exists:posts,id',
             'content' => 'required|string|min:5|max:500',
@@ -54,27 +57,18 @@ class CommentController extends Controller
 
     public function update(Request $request, $id)
     {
-        if (!Auth::check()) {
-            return response()->json(['message' => 'Vous devez être connecté pour mettre à jour un commentaire.'], 401);
-        }
+        $comment = Comment::findOrFail($id);
+
+        $this->authorize('update', $comment);
 
         $validatedData = $request->validate([
             'content' => 'required|string|min:5|max:500',
-            'post_id' => 'required|integer',
         ], [
             'content.required' => 'Le contenu est obligatoire.',
             'content.string' => 'Le contenu doit être une chaîne de caractères.',
             'content.min' => 'Le contenu doit contenir au moins 5 caractères.',
             'content.max' => 'Le contenu ne doit pas dépasser 500 caractères.',
-            'post_id.required' => 'L\'ID du post est obligatoire.',
-            'post_id.integer' => 'L\'ID du post doit être un entier.',
         ]);
-
-        if (!Post::find($validatedData['post_id'])) {
-            return response()->json(['message' => 'Le post spécifié n\'existe pas.'], 404);
-        }
-
-        $comment = Comment::findOrFail($id);
 
         $comment->update([
             'content' => $validatedData['content'],
@@ -83,10 +77,11 @@ class CommentController extends Controller
         return response()->json($comment, 200);
     }
 
-
     public function destroy($id)
     {
         $comment = Comment::find($id);
+
+        $this->authorize('delete', $comment);
 
         if (!$comment) {
             return response()->json(['message' => 'Commentaire non trouvé.'], 404);
@@ -100,6 +95,6 @@ class CommentController extends Controller
 
         $comment->delete();
 
-        return response()->json(['message' => 'Commentaire supprimé avec succès.']);
+        return response()->json(['message' => 'Commentaire supprimé avec succès.'], 200);
     }
 }
