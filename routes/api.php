@@ -7,6 +7,7 @@ use App\Http\Controllers\Api\LikeController;
 use App\Http\Controllers\Api\PostController;
 use App\Http\Controllers\Api\EventController;
 use App\Http\Controllers\Api\CommentController;
+use App\Http\Controllers\Api\NotificationController;
 
 /*
 |--------------------------------------------------------------------------
@@ -42,35 +43,37 @@ Route::prefix('v1')->group(function () {
     // Routes protégées - Authentification requise
     Route::middleware(['auth.middleware'])->group(function () {
 
+        Route::post('/save-fcm-token', [NotificationController::class, 'saveFcmToken']);
+
         Route::delete('auth/logout', [AuthController::class, 'logout']);
         Route::get('auth/profil', [AuthController::class, 'profil']);
 
         Route::post('posts', [PostController::class, 'store'])
-        ->middleware('can:create,App\Models\Post');
+            ->middleware('can:create,App\Models\Post');
 
         Route::put('posts/{post}', [PostController::class, 'update'])
-        ->middleware('can:update,post');
+            ->middleware('can:update,post');
 
         Route::delete('posts/{post}', [PostController::class, 'destroy'])
-        ->middleware('can:delete,post');
+            ->middleware('can:delete,post');
 
         Route::post('events', [EventController::class, 'store'])
-        ->middleware('can:create,App\Models\Event');
+            ->middleware('can:create,App\Models\Event');
 
         Route::put('events/{event}', [EventController::class, 'update'])
-        ->middleware('can:update,event');
+            ->middleware('can:update,event');
 
         Route::delete('events/{event}', [EventController::class, 'destroy'])
-        ->middleware('can:delete,event');
+            ->middleware('can:delete,event');
 
         Route::post('comments', [CommentController::class, 'store'])
-        ->middleware('can:create,App\Models\Comment');
+            ->middleware('can:create,App\Models\Comment');
 
         Route::put('comments/{comment}', [CommentController::class, 'update'])
-        ->middleware('can:update,comment');
+            ->middleware('can:update,comment');
 
         Route::delete('comments/{comment}', [CommentController::class, 'destroy'])
-        ->middleware('can:delete,comment');
+            ->middleware('can:delete,comment');
 
         Route::post('likes', [LikeController::class, 'like']);
     });

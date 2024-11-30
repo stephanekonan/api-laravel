@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Models\Post;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
+use App\Jobs\SendPostEventNotification;
 
 class PostController extends Controller
 {
@@ -89,7 +90,13 @@ class PostController extends Controller
 
         $post = Post::create($validatedData);
 
-        return response()->json($post, 201);
+        SendPostEventNotification::dispatch($post);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Post créé avec succès et notification envoyée.',
+            'data' => $post
+        ]);
     }
 
     public function update(Request $request, $id)

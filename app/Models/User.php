@@ -34,7 +34,8 @@ class User extends Authenticatable
         'phone',
         'email',
         'password',
-        'role'
+        'role',
+        'fcm_token'
     ];
 
     /**

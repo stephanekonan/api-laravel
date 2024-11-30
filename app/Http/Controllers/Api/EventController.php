@@ -4,9 +4,9 @@ namespace App\Http\Controllers\Api;
 
 use App\Models\Event;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Crypt;
-use Illuminate\Support\Facades\Validator;
 use App\Http\Controllers\Controller;
+use App\Jobs\SendPostEventNotification;
+use Illuminate\Support\Facades\Validator;
 
 class EventController extends Controller
 {
@@ -54,9 +54,11 @@ class EventController extends Controller
             'url_image' => $imageUrl,
         ]);
 
+        SendPostEventNotification::dispatch($event);
+
         return response()->json([
             'success' => true,
-            'message' => 'Événement créé avec succès.',
+            'message' => 'Événement créé avec succès. Notification envoyée',
             'data' => $event,
         ], 201);
     }
